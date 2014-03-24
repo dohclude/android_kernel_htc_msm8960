@@ -1,0 +1,81 @@
+#
+#       Written by echo17
+#       under the echo license - use and abuse as much as you would like,
+#       just don't be an asshat
+#
+echo "root directory of AOSP source"
+read dir
+echo "Which kernel do you want to compile?"
+echo "1) Supersonic"
+echo "2) Supersonic SBC"
+echo "3) Incredible"
+echo "4) Incredible SBC"
+echo "5) Bravo"
+echo "6) Bravoc"
+echo "7) Nexus 1"
+read conf
+if [ $conf = 1 ]
+then
+    cp arch/arm/configs/tiamat_supersonic_defconfig .config
+elif [ $conf = 2 ]
+then
+    cp arch/arm/configs/tiamat_supersonic_sbc_defconfig .config
+elif [ $conf = 3 ]
+then
+    cp arch/arm/configs/tiamat_incrediblec_defconfig .config
+elif [ $conf = 4 ]
+then
+    cp arch/arm/configs/tiamat_incrediblec_sbc_defconfig .config
+elif [ $conf = 5 ]
+then
+    cp arch/arm/configs/tiamat_bravo_defconfig .config
+elif [ $conf = 6 ]
+then
+    cp arch/arm/configs/tiamat_bravoc_defconfig .config
+elif [ $conf = 7 ]
+then
+    cp arch/arm/configs/tiamat_mahimahi_defconfig .config
+fi
+export MJOLNIR="$dir"/prebuilt/linux-x86/toolchain/arm-eabi-4.4.6-Mjolnir/bin/arm-eabi-
+make clean
+time make ARCH=arm CROSS_COMPILE=$MJOLNIR -j`grep 'processor' /proc/cpuinfo | wc -l`
+echo "Moving kernel and modules to Out dir"
+rm out/kernel/zImage
+rm out/tiamat.zip
+rm -rf out/system/lib/modules
+mkdir out/system/lib/modules
+cp arch/arm/boot/zImage out/kernel/
+if [ $conf = 1 ]
+then
+    cp drivers/net/wimax/SQN/sequans_sdio.ko out/system/lib/modules/
+    cp drivers/net/wireless/bcm4329/bcm4329.ko out/system/lib/modules/
+    cp drivers/net/wimax/wimaxdbg/wimaxdbg.ko out/system/lib/modules/
+    cp drivers/net/wimax/wimaxuart/wimaxuart.ko out/system/lib/modules/
+elif [ $conf = 2 ]
+then
+    cp drivers/net/wimax/SQN/sequans_sdio.ko out/system/lib/modules/
+    cp drivers/net/wireless/bcm4329/bcm4329.ko out/system/lib/modules/
+    cp drivers/net/wimax/wimaxdbg/wimaxdbg.ko out/system/lib/modules/
+    cp drivers/net/wimax/wimaxuart/wimaxuart.ko out/system/lib/modules/
+elif [ $conf = 3 ]
+then
+    cp drivers/net/wireless/bcm4329/bcm4329.ko out/system/lib/modules/
+    cp drivers/net/ifb.ko out/system/lib/modules/
+elif [ $conf = 4 ]
+then
+    cp drivers/net/wireless/bcm4329/bcm4329.ko out/system/lib/modules/
+    cp drivers/net/ifb.ko out/system/lib/modules/
+elif [ $conf = 5 ]
+then
+    cp drivers/net/wireless/bcm4329/bcm4329.ko out/system/lib/modules/
+elif [ $conf = 6 ]
+then
+    cp drivers/net/wireless/bcm4329/bcm4329.ko out/system/lib/modules/
+elif [ $conf = 7 ]
+then
+    cp drivers/net/wireless/bcm4329/bcm4329.ko out/system/lib/modules/
+fi
+echo "Creating flashable zip using AnyKernel by Koush" 
+cd out
+zip -r tiamat.zip kernel system META-INF
+echo "DONE!"
